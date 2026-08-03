@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rn \"onClick={\\(\\) => {}}\\\\|onClick={\\(\\)=>{}}\\\\|// TODO\\\\|function.*{}\\\\s*$\" app components)",
+      "Bash(pnpm add *)",
+      "Bash(npm --version)",
+      "Bash(corepack --version)",
+      "Bash(corepack pnpm *)"
+    ]
+  }
+}
