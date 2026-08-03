@@ -195,7 +195,7 @@ export function PartySale() {
           {/* Basic Details */}
           <div>
             <h3 className="font-semibold mb-4">Invoice Details</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <Label htmlFor="vno">VNo.</Label>
                 <Input
@@ -249,7 +249,7 @@ export function PartySale() {
           {/* Amount Details */}
           <div>
             <h3 className="font-semibold mb-4">Amount Details</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <Label htmlFor="gross_amount">Gross Amount</Label>
                 <Input
@@ -301,7 +301,7 @@ export function PartySale() {
           {/* Tax and Payment */}
           <div>
             <h3 className="font-semibold mb-4">Tax & Payment</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <Label htmlFor="bill_type">Bill Type</Label>
                 <Select value={formData.bill_type} onValueChange={(value) => handleSelectChange('bill_type', value)}>
@@ -367,7 +367,7 @@ export function PartySale() {
           {/* Transport & Logistics */}
           <div>
             <h3 className="font-semibold mb-4">Transport & Logistics</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <Label htmlFor="transport">Transport</Label>
                 <Input

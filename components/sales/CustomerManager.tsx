@@ -195,7 +195,7 @@ export function CustomerManager({ onSelectCustomer, selectedCustomer }: Customer
           </Button>
         ) : (
           <form onSubmit={handleAddCustomer} className="space-y-3 border-t pt-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label htmlFor="name" className="text-sm">Name *</Label>
                 <Input

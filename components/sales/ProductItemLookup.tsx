@@ -182,7 +182,7 @@ export function ProductItemLookup() {
                 <p className="text-sm text-slate-500">Product Name</p>
                 <p className="font-semibold">{foundItem.item_name}</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-slate-500">Purchase Price</p>
                   <p className="font-semibold">₹ {foundItem.purchase_price}</p>
@@ -249,7 +249,7 @@ export function ProductItemLookup() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="purchase_price">Purchase Price</Label>
                   <Input

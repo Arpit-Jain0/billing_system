@@ -33,7 +33,7 @@ export function RecordDetailsDialog({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         {record && (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
             {Object.entries(record).map(([key, value]) => (
               <div key={key}>
                 <p className="text-slate-500">{formatLabel(key)}</p>
