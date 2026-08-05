@@ -7,18 +7,23 @@ import { Button } from '@/components/ui/button';
 import { formatCurrency, formatDate } from '@/lib/invoice-utils';
 import { RecordDetailsDialog } from './RecordDetailsDialog';
 
-export function ReceiptsList() {
+export function ReceiptsList({ companyId }: { companyId: number }) {
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<any | null>(null);
 
   useEffect(() => {
     fetchPayments();
-  }, []);
+  }, [companyId]);
 
   const fetchPayments = async () => {
     try {
-      const { data, error } = await supabase.schema('saree').from('payments').select('*').order('payment_date', { ascending: false });
+      const { data, error } = await supabase
+        .schema('saree')
+        .from('payments')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('payment_date', { ascending: false });
 
       if (error) throw error;
       setPayments(data || []);

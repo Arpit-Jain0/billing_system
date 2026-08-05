@@ -19,43 +19,46 @@ interface Party {
   address: string;
 }
 
-export function PartySale() {
+const initialFormData = {
+  vno: '',
+  bill_no: '',
+  bill_date: getLocalDateString(),
+  party_id: '',
+  book: 'JS',
+  bill_type: 'Inc. Excl.',
+  broker: '',
+  payment_method: 'Cash',
+  cgst_percent: '9',
+  sgst_percent: '9',
+  igst_percent: '18',
+  gross_amount: '0',
+  total_discount: '0',
+  total_add_amount: '0',
+  transport: '',
+  city: '',
+  lr_date: '',
+  lr_no: '',
+  remark: '',
+};
+
+export function PartySale({ companyId }: { companyId: number }) {
   const [parties, setParties] = useState<Party[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const [formData, setFormData] = useState({
-    vno: '',
-    bill_no: '',
-    bill_date: getLocalDateString(),
-    party_id: '',
-    book: 'JS',
-    bill_type: 'Inc. Excl.',
-    broker: '',
-    payment_method: 'Cash',
-    cgst_percent: '9',
-    sgst_percent: '9',
-    igst_percent: '18',
-    gross_amount: '0',
-    total_discount: '0',
-    total_add_amount: '0',
-    transport: '',
-    city: '',
-    lr_date: '',
-    lr_no: '',
-    remark: '',
-  });
+  const [formData, setFormData] = useState(initialFormData);
 
   // Fetch parties on mount
   useEffect(() => {
     fetchParties();
-  }, []);
+  }, [companyId]);
 
   const fetchParties = async () => {
     try {
       const { data, error } = await supabase.schema('saree')
         .from('parties')
         .select('id, name, mobile, address')
+        .eq('company_id', companyId)
         .eq('party_type', 'customer');
 
       if (error) throw error;
@@ -107,6 +110,7 @@ export function PartySale() {
 
     try {
       const invoiceData = {
+        company_id: companyId,
         vno: formData.vno || null,
         bill_no: formData.bill_no,
         bill_date: formData.bill_date,
@@ -145,27 +149,7 @@ export function PartySale() {
       
       // Reset form
       setTimeout(() => {
-        setFormData({
-          vno: '',
-          bill_no: '',
-          bill_date: getLocalDateString(),
-          party_id: '',
-          book: 'JS',
-          bill_type: 'Inc. Excl.',
-          broker: '',
-          payment_method: 'Cash',
-          cgst_percent: '9',
-          sgst_percent: '9',
-          igst_percent: '18',
-          gross_amount: '0',
-          total_discount: '0',
-          total_add_amount: '0',
-          transport: '',
-          city: '',
-          lr_date: '',
-          lr_no: '',
-          remark: '',
-        });
+        setFormData(initialFormData);
       }, 1500);
     } catch (error) {
       console.error('[v0] Error creating party sale:', error);

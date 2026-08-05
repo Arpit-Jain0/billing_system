@@ -11,43 +11,25 @@ export const supabase = createBrowserClient(
 export type Database = {
   saree: {
     Tables: {
-      users: {
-        Row: { 
-          id: string; 
-          email: string; 
-          password_hash: string;
-          full_name?: string;
-          phone?: string;
-          role: 'admin' | 'staff' | 'viewer';
-          is_active: boolean;
-          last_login?: string;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: { 
-          email: string; 
-          password_hash: string;
-          full_name?: string;
-          phone?: string;
-          role?: 'admin' | 'staff' | 'viewer';
-          is_active?: boolean;
-        };
-      };
       companies: {
-        Row: { id: number; name: string; accounting_year: string; created_at: string };
-        Insert: { name: string; accounting_year: string };
+        Row: { id: number; name: string; slug: string; accounting_year: string; created_at: string };
+        Insert: { name: string; slug: string; accounting_year: string };
+      };
+      user_companies: {
+        Row: { user_id: string; company_id: number; role: 'owner' | 'admin' | 'staff' | 'viewer'; created_at: string };
+        Insert: { user_id: string; company_id: number; role?: 'owner' | 'admin' | 'staff' | 'viewer' };
       };
       parties: {
-        Row: { id: number; party_type: string; name: string; mobile: string; email: string; address: string; created_at: string };
-        Insert: { party_type: string; name: string; mobile?: string; email?: string; address?: string };
+        Row: { id: number; company_id: number; party_type: string; name: string; mobile: string; email: string; address: string; created_at: string };
+        Insert: { company_id: number; party_type: string; name: string; mobile?: string; email?: string; address?: string };
       };
       products: {
-        Row: { id: number; barcode: string; item_name: string; unit: string; hsn_code: string; mrp: number; cost_price: number; stock: number; created_at: string };
-        Insert: { barcode: string; item_name: string; unit?: string; hsn_code?: string; mrp?: number; cost_price?: number };
+        Row: { id: number; company_id: number; barcode: string; item_name: string; unit: string; hsn_code: string; mrp: number; cost_price: number; stock: number; created_at: string };
+        Insert: { company_id: number; barcode: string; item_name: string; unit?: string; hsn_code?: string; mrp?: number; cost_price?: number };
       };
       product_items: {
-        Row: { id: number; item_id: string; product_id?: number; item_name: string; barcode: string; purchase_price: number; sale_price: number; status: string; created_at: string };
-        Insert: { item_id: string; product_id?: number; item_name: string; barcode: string; purchase_price?: number; sale_price: number; status?: string };
+        Row: { id: number; company_id: number; item_id: string; product_id?: number; item_name: string; barcode: string; purchase_price: number; sale_price: number; status: string; created_at: string };
+        Insert: { company_id: number; item_id: string; product_id?: number; item_name: string; barcode: string; purchase_price?: number; sale_price: number; status?: string };
       };
       sales_invoices: {
         Row: any;

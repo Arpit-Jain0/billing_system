@@ -24,7 +24,7 @@ const initialFormData = {
   remark: '',
 };
 
-export function PaymentEntry({ onSuccess }: { onSuccess?: () => void }) {
+export function PaymentEntry({ companyId, onSuccess }: { companyId: number; onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
 
@@ -45,6 +45,7 @@ export function PaymentEntry({ onSuccess }: { onSuccess?: () => void }) {
       const { error } = await supabase.schema('saree').from('payments').insert([
         {
           ...formData,
+          company_id: companyId,
           party_id: parseInt(formData.party_id),
           amount: parseFloat(formData.amount),
           cheque_date: formData.bank_cash === 'Cheque' && formData.cheque_date ? formData.cheque_date : null,

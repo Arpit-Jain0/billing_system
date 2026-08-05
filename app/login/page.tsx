@@ -8,10 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useCompany } from '@/contexts/CompanyContext';
 
 export default function LoginPage() {
   const router = useRouter();
   const { signIn } = useAuthContext();
+  const { tenantSlug, tenantName, tenantResolved } = useCompany();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -36,12 +38,35 @@ export default function LoginPage() {
     }
   };
 
+  if (!tenantResolved) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+      </main>
+    );
+  }
+
+  if (!tenantSlug) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <Card className="border-slate-700 bg-slate-950 w-full max-w-md">
+          <CardHeader className="space-y-2 text-center">
+            <CardTitle className="text-2xl font-bold text-white">Shop not found</CardTitle>
+            <CardDescription className="text-slate-400">
+              This address isn't linked to a shop yet. Double-check the URL, or ask your admin to set one up.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Card className="border-slate-700 bg-slate-950">
           <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-2xl font-bold text-white">MAA PADMAWATI SAREES</CardTitle>
+            <CardTitle className="text-2xl font-bold text-white">{tenantName || 'Sign in'}</CardTitle>
             <CardDescription className="text-slate-400">Billing & Inventory System</CardDescription>
           </CardHeader>
           <CardContent>
@@ -55,12 +80,13 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-200">Email</label>
                 <Input
-                  type="text"
+                  type="email"
                   placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
                   className="bg-slate-900 border-slate-700 text-white placeholder-slate-500"
+                  required
                 />
               </div>
 
@@ -73,6 +99,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
                   className="bg-slate-900 border-slate-700 text-white placeholder-slate-500"
+                  required
                 />
               </div>
 
@@ -83,12 +110,6 @@ export default function LoginPage() {
               >
                 {loading ? 'Signing in...' : 'Sign In'}
               </Button>
-
-              <div className="text-center text-sm text-slate-400 border-t border-slate-700 pt-4 mt-4">
-                <p className="font-semibold mb-2">Admin Account:</p>
-                <p>Email: mps</p>
-                <p>Password: mps@1234</p>
-              </div>
             </form>
           </CardContent>
         </Card>

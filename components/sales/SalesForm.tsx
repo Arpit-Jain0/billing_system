@@ -34,7 +34,7 @@ const initialFormData = {
   remark: '',
 };
 
-export function SalesForm({ onSuccess }: { onSuccess?: () => void }) {
+export function SalesForm({ companyId, onSuccess }: { companyId: number; onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
 
@@ -77,6 +77,7 @@ export function SalesForm({ onSuccess }: { onSuccess?: () => void }) {
         .insert([
           {
             ...formData,
+            company_id: companyId,
             party_id: parseInt(formData.party_id),
             cgst_percent: parseFloat(formData.cgst_percent),
             sgst_percent: parseFloat(formData.sgst_percent),

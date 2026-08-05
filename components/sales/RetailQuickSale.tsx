@@ -30,7 +30,7 @@ interface Customer {
   party_type: string;
 }
 
-export function RetailQuickSale() {
+export function RetailQuickSale({ companyId }: { companyId: number }) {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [billNo, setBillNo] = useState('');
   const [billDate, setBillDate] = useState(getLocalDateString());
@@ -54,6 +54,7 @@ export function RetailQuickSale() {
         .schema('saree')
         .from('product_items')
         .select('*')
+        .eq('company_id', companyId)
         .or(`item_id.eq.${itemSearch},barcode.eq.${itemSearch}`)
         .single();
 
@@ -146,6 +147,7 @@ export function RetailQuickSale() {
         .from('sales_invoices')
         .insert([
           {
+            company_id: companyId,
             bill_no: billNo,
             bill_date: billDate,
             party_id: selectedCustomer.id,
@@ -162,6 +164,7 @@ export function RetailQuickSale() {
 
       // Add invoice items
       const itemsData = salesItems.map((item) => ({
+        company_id: companyId,
         invoice_id: invoiceData.id,
         product_id: item.product_id,
         quantity: item.quantity,
@@ -185,6 +188,7 @@ export function RetailQuickSale() {
         .schema('saree')
         .from('product_items')
         .update({ status: 'sold' })
+        .eq('company_id', companyId)
         .in('id', soldItemIds);
 
       if (statusError) throw statusError;
@@ -210,7 +214,7 @@ export function RetailQuickSale() {
   return (
     <div className="space-y-6">
       {/* Customer Section */}
-      <CustomerManager onSelectCustomer={setSelectedCustomer} selectedCustomer={selectedCustomer || undefined} />
+      <CustomerManager companyId={companyId} onSelectCustomer={setSelectedCustomer} selectedCustomer={selectedCustomer || undefined} />
 
       {/* Invoice Details */}
       <Card>

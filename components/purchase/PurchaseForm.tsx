@@ -36,7 +36,7 @@ const initialFormData = {
   remark: '',
 };
 
-export function PurchaseForm({ onSuccess }: { onSuccess?: () => void }) {
+export function PurchaseForm({ companyId, onSuccess }: { companyId: number; onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
 
@@ -64,6 +64,7 @@ export function PurchaseForm({ onSuccess }: { onSuccess?: () => void }) {
       const { error } = await supabase.schema('saree').from('purchase_invoices').insert([
         {
           ...formData,
+          company_id: companyId,
           party_id: parseInt(formData.party_id),
           cgst_percent: parseFloat(formData.cgst_percent),
           sgst_percent: parseFloat(formData.sgst_percent),

@@ -1,100 +1,46 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import bcrypt from 'bcryptjs';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
-interface AuthUser {
-  id: string;
-  email: string;
-  full_name?: string;
-  role: 'admin' | 'staff' | 'viewer';
-}
-
 interface AuthContextType {
-  user: AuthUser | null;
+  user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: { message: string } | null }>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in from localStorage
-    const checkAuth = async () => {
-      try {
-        const storedUser = localStorage.getItem('auth_user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        }
-      } catch (error) {
-        console.error('[v0] Auth check error:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ?? null);
+      setLoading(false);
+    });
 
-    checkAuth();
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    try {
-      // Query the users table for the user
-      const { data, error } = await supabase
-        .schema('saree')
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .eq('is_active', true)
-        .single();
-
-      if (error || !data) {
-        return { error: { message: 'Invalid email or password' } };
-      }
-
-      // Bcrypt hashes are verified properly; plain-text password_hash values
-      // (as created by ADMIN_SETUP.md) fall back to a direct comparison.
-      const isBcryptHash = data.password_hash.startsWith('$2a$') || data.password_hash.startsWith('$2b$');
-      const passwordMatches = isBcryptHash
-        ? bcrypt.compareSync(password, data.password_hash)
-        : data.password_hash === password;
-
-      if (!passwordMatches) {
-        return { error: { message: 'Invalid email or password' } };
-      }
-
-      const user: AuthUser = {
-        id: data.id,
-        email: data.email,
-        full_name: data.full_name,
-        role: data.role,
-      };
-
-      // Store user in localStorage
-      localStorage.setItem('auth_user', JSON.stringify(user));
-      setUser(user);
-
-      return { error: null };
-    } catch (error: any) {
-      return { error: { message: error.message || 'Login failed' } };
-    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: { message: error.message } };
+    return { error: null };
   };
 
   const signOut = async () => {
-    localStorage.removeItem('auth_user');
-    setUser(null);
+    await supabase.auth.signOut();
   };
 
-  return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, loading, signIn, signOut }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuthContext() {

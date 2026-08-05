@@ -19,35 +19,39 @@ interface Customer {
 }
 
 interface CustomerManagerProps {
+  companyId: number;
   onSelectCustomer: (customer: Customer) => void;
   selectedCustomer?: Customer;
 }
 
-export function CustomerManager({ onSelectCustomer, selectedCustomer }: CustomerManagerProps) {
+const emptyFormData = {
+  name: '',
+  mobile: '',
+  email: '',
+  address: '',
+  party_type: 'customer',
+};
+
+export function CustomerManager({ companyId, onSelectCustomer, selectedCustomer }: CustomerManagerProps) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const [formData, setFormData] = useState({
-    name: '',
-    mobile: '',
-    email: '',
-    address: '',
-    party_type: 'customer',
-  });
+  const [formData, setFormData] = useState(emptyFormData);
 
   // Fetch customers
   useEffect(() => {
     fetchCustomers();
-  }, []);
+  }, [companyId]);
 
   const fetchCustomers = async () => {
     try {
       const { data, error } = await supabase.schema('saree')
         .from('parties')
         .select('*')
+        .eq('company_id', companyId)
         .order('name');
 
       if (error) throw error;
@@ -73,6 +77,7 @@ export function CustomerManager({ onSelectCustomer, selectedCustomer }: Customer
         .from('parties')
         .insert([
           {
+            company_id: companyId,
             name: formData.name,
             mobile: formData.mobile,
             email: formData.email,
@@ -86,7 +91,7 @@ export function CustomerManager({ onSelectCustomer, selectedCustomer }: Customer
       if (error) throw error;
 
       setCustomers([...customers, data]);
-      setFormData({ name: '', mobile: '', email: '', address: '', party_type: 'Customer' });
+      setFormData(emptyFormData);
       setShowForm(false);
       setMessage('Customer added successfully');
       
@@ -252,7 +257,7 @@ export function CustomerManager({ onSelectCustomer, selectedCustomer }: Customer
                 variant="outline"
                 onClick={() => {
                   setShowForm(false);
-                  setFormData({ name: '', mobile: '', email: '', address: '', party_type: 'Customer' });
+                  setFormData(emptyFormData);
                 }}
               >
                 Cancel

@@ -7,18 +7,23 @@ import { Button } from '@/components/ui/button';
 import { formatCurrency, formatDate } from '@/lib/invoice-utils';
 import { RecordDetailsDialog } from './RecordDetailsDialog';
 
-export function PurchaseList() {
+export function PurchaseList({ companyId }: { companyId: number }) {
   const [purchases, setPurchases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<any | null>(null);
 
   useEffect(() => {
     fetchPurchases();
-  }, []);
+  }, [companyId]);
 
   const fetchPurchases = async () => {
     try {
-      const { data, error } = await supabase.schema('saree').from('purchase_invoices').select('*').order('bill_date', { ascending: false });
+      const { data, error } = await supabase
+        .schema('saree')
+        .from('purchase_invoices')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('bill_date', { ascending: false });
 
       if (error) throw error;
       setPurchases(data || []);

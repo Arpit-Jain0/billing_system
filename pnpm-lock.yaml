@@ -100,19 +100,16 @@ importers:
         version: 1.1.6(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@supabase/ssr':
         specifier: latest
-        version: 0.12.4(@supabase/supabase-js@2.111.0)
+        version: 0.12.4(@supabase/supabase-js@2.112.0)
       '@supabase/supabase-js':
         specifier: latest
-        version: 2.111.0
+        version: 2.112.0
       '@vercel/analytics':
         specifier: latest
         version: 2.0.1(next@16.2.0(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.24(postcss@8.5.6)
-      bcryptjs:
-        specifier: ^3.0.3
-        version: 3.0.3
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -428,7 +425,7 @@ packages:
     resolution: {integrity: sha512-eWpQYr67tqJLeaSUl0Q+TquuYfUdTibpOJlUMV2FfUP7+KqCC5TufnwnlXL6mobZBJbGAYRd7ZvEBDCbLInjhg==}
     engines: {node: '>=20'}
     peerDependencies:
-      hono: ^4
+      hono: 4.12.25
 
   '@hookform/resolvers@3.10.0':
     resolution: {integrity: sha512-79Dv+3mDF7i+2ajj7SkypSKHhl1cbln1OGavqrsF7p6mbUv11xpqpacPsGDCTRvCSjEEIez2ef1NveSVL3b0Ag==}
@@ -1344,23 +1341,23 @@ packages:
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
     engines: {node: '>=18'}
 
-  '@supabase/auth-js@2.111.0':
-    resolution: {integrity: sha512-hbRLgyQZEX0SDyF4LYXpv94qOIQyFATfpT5SIs2V0SisHnisVRkYgiPQWzv80l4S2mO3qof78rmoH9j5zoFsYQ==}
+  '@supabase/auth-js@2.112.0':
+    resolution: {integrity: sha512-8qAdObNQHKbSeVBLmf2WLNT7+bCE8zBofpCFiNUqGBAl5qw9VagSvcmPXlh78McAU7iHrGik1oeJxiB2A6B29w==}
     engines: {node: '>=22.0.0'}
 
-  '@supabase/functions-js@2.111.0':
-    resolution: {integrity: sha512-RW/OCsd6MO592zU8ifzP8/f8XzxxIdpb+Up5XaOtE26Fw+3zTp475WX7+GuuktiD1WF8pFUDe6khUPbMp77RCw==}
+  '@supabase/functions-js@2.112.0':
+    resolution: {integrity: sha512-2DdaEZs0vq86orMIZBO+eM5w5/UxZb1EZyg2JraBKS4W9BzfFO+fOFD6YStmZ7iAOWvxNTGPjPNItsofpGgTCA==}
     engines: {node: '>=22.0.0'}
 
   '@supabase/phoenix@0.4.5':
     resolution: {integrity: sha512-aAn9H9ovVyeApKy11OWOrrOGq8DV68yWeH4ud2lN9fzn4aO8Zb5GLL9m1pUg9nLqIcT+ZDfAcsZe0E/nqdv2lw==}
 
-  '@supabase/postgrest-js@2.111.0':
-    resolution: {integrity: sha512-pcqeDsnWP0lx9GawduYxNZJHeuTm53O7L0SC8RF8tniV3GWIPY6me6OTdnwzdwNUmNy1dzUVtSyIfE6+OflzPQ==}
+  '@supabase/postgrest-js@2.112.0':
+    resolution: {integrity: sha512-4HKCVq32Jlk/wS8Ud8QgaAuQ4u6w1hZfw/gS5IcIN7wYddElMj4kfiCZpHMPfncomMnYzAKBUhwBZPpRcTH2Yw==}
     engines: {node: '>=22.0.0'}
 
-  '@supabase/realtime-js@2.111.0':
-    resolution: {integrity: sha512-6oRf/vZyRwg8f8GbFSJkrD2w4HAu/yTvyMViHXHS+H5hNJzdXCrUR7cP5oW7daT3YlRnzRPY9LcGSJKZAmfMSg==}
+  '@supabase/realtime-js@2.112.0':
+    resolution: {integrity: sha512-McFFP+ivFDMTaCEh8JDpG+sPEmv5IjKvrP0uTH3Lbsriai4KbxB8ycY8TqPQnbjhOVjEifQm1q0y2tL1CUw9Zg==}
     engines: {node: '>=22.0.0'}
 
   '@supabase/ssr@0.12.4':
@@ -1368,13 +1365,18 @@ packages:
     peerDependencies:
       '@supabase/supabase-js': ^2.111.0
 
-  '@supabase/storage-js@2.111.0':
-    resolution: {integrity: sha512-UEViNmTzVOxE8dqUA81wls+n9xgmlvSFfhfwo6QxrO4kQOytCYyw3ciYFoi4XoD4Jl95NJ3jnndHN5iIudWzqw==}
+  '@supabase/storage-js@2.112.0':
+    resolution: {integrity: sha512-X44Bl045X/e5e2tJqWsY+JmQvgtm04BJuijiWprIWYLn0mDvGnu8hLdzPOPcTVji7wlqbt2ZUHttsv+rGKQYXw==}
     engines: {node: '>=22.0.0'}
 
-  '@supabase/supabase-js@2.111.0':
-    resolution: {integrity: sha512-9q0/AULthQnWeiDh1vGyjoJZbSY04bu6qHcWit70pqEYn5Kv/dkCPY62Ja1123jEnJbB9Vd2pjY7Kvk/lK3peA==}
+  '@supabase/supabase-js@2.112.0':
+    resolution: {integrity: sha512-dHVOgog58GOagtrZuPxJYg/R45ZV2U0qqgXffH+lMlt1OS+267Pw4g7bw3iXCGxN85OufiE0nI1baxDXlgEyfQ==}
     engines: {node: '>=22.0.0'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0'
+    peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
 
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
@@ -1614,10 +1616,6 @@ packages:
 
   baseline-browser-mapping@2.9.19:
     resolution: {integrity: sha512-ipDqC8FrAl/76p2SSWKSI+H9tFwm7vYqXQrItCuiVPt26Km0jS+NzSsBWAaBusvSbQcfJG+JitdMm+wZAgTYqg==}
-    hasBin: true
-
-  bcryptjs@3.0.3:
-    resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
     hasBin: true
 
   body-parser@2.3.0:
@@ -4303,42 +4301,42 @@ snapshots:
 
   '@sindresorhus/merge-streams@4.0.0': {}
 
-  '@supabase/auth-js@2.111.0':
+  '@supabase/auth-js@2.112.0':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/functions-js@2.111.0':
+  '@supabase/functions-js@2.112.0':
     dependencies:
       tslib: 2.8.1
 
   '@supabase/phoenix@0.4.5': {}
 
-  '@supabase/postgrest-js@2.111.0':
+  '@supabase/postgrest-js@2.112.0':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/realtime-js@2.111.0':
+  '@supabase/realtime-js@2.112.0':
     dependencies:
       '@supabase/phoenix': 0.4.5
       tslib: 2.8.1
 
-  '@supabase/ssr@0.12.4(@supabase/supabase-js@2.111.0)':
+  '@supabase/ssr@0.12.4(@supabase/supabase-js@2.112.0)':
     dependencies:
-      '@supabase/supabase-js': 2.111.0
+      '@supabase/supabase-js': 2.112.0
       cookie: 1.1.1
 
-  '@supabase/storage-js@2.111.0':
+  '@supabase/storage-js@2.112.0':
     dependencies:
       iceberg-js: 0.8.1
       tslib: 2.8.1
 
-  '@supabase/supabase-js@2.111.0':
+  '@supabase/supabase-js@2.112.0':
     dependencies:
-      '@supabase/auth-js': 2.111.0
-      '@supabase/functions-js': 2.111.0
-      '@supabase/postgrest-js': 2.111.0
-      '@supabase/realtime-js': 2.111.0
-      '@supabase/storage-js': 2.111.0
+      '@supabase/auth-js': 2.112.0
+      '@supabase/functions-js': 2.112.0
+      '@supabase/postgrest-js': 2.112.0
+      '@supabase/realtime-js': 2.112.0
+      '@supabase/storage-js': 2.112.0
 
   '@swc/helpers@0.5.15':
     dependencies:
@@ -4520,8 +4518,6 @@ snapshots:
   balanced-match@4.0.4: {}
 
   baseline-browser-mapping@2.9.19: {}
-
-  bcryptjs@3.0.3: {}
 
   body-parser@2.3.0:
     dependencies:

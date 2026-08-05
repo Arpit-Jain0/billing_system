@@ -38,7 +38,16 @@ const emptyItemDetails = {
   status: 'available',
 };
 
-export function ProductItemLookup() {
+const emptyNewProduct = {
+  barcode: '',
+  item_name: '',
+  unit: '',
+  hsn_code: '',
+  mrp: '',
+  cost_price: '',
+};
+
+export function ProductItemLookup({ companyId }: { companyId: number }) {
   const [searchId, setSearchId] = useState('');
   const [foundItem, setFoundItem] = useState<ProductItem | null>(null);
   const [loading, setLoading] = useState(false);
@@ -48,13 +57,23 @@ export function ProductItemLookup() {
   const [creatingItem, setCreatingItem] = useState(false);
   const [message, setMessage] = useState('');
 
+  const [showNewProduct, setShowNewProduct] = useState(false);
+  const [newProduct, setNewProduct] = useState(emptyNewProduct);
+  const [savingProduct, setSavingProduct] = useState(false);
+
+  const fetchProducts = async () => {
+    const { data, error } = await supabase
+      .schema('saree')
+      .from('products')
+      .select('id, item_name, barcode')
+      .eq('company_id', companyId)
+      .order('item_name');
+    if (!error) setProducts(data || []);
+  };
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      const { data, error } = await supabase.schema('saree').from('products').select('id, item_name, barcode').order('item_name');
-      if (!error) setProducts(data || []);
-    };
     fetchProducts();
-  }, []);
+  }, [companyId]);
 
   // Lookup item by ID or barcode
   const handleLookup = async (e: React.FormEvent) => {
@@ -67,6 +86,7 @@ export function ProductItemLookup() {
         .schema('saree')
         .from('product_items')
         .select('*')
+        .eq('company_id', companyId)
         .or(`item_id.eq.${searchId},barcode.eq.${searchId}`)
         .single();
 
@@ -123,6 +143,7 @@ export function ProductItemLookup() {
         .from('product_items')
         .insert([
           {
+            company_id: companyId,
             item_id: itemDetails.item_id,
             product_id: itemDetails.product_id ? parseInt(itemDetails.product_id) : null,
             item_name: itemDetails.item_name,
@@ -142,6 +163,48 @@ export function ProductItemLookup() {
     } catch (error) {
       console.error('[v0] Save error:', error);
       setMessage('Error saving product item');
+    }
+  };
+
+  // Save a new SKU (products table) so it's selectable above
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProduct.barcode || !newProduct.item_name) {
+      setMessage('Barcode and product name are required');
+      return;
+    }
+
+    setSavingProduct(true);
+    try {
+      const { data, error } = await supabase
+        .schema('saree')
+        .from('products')
+        .insert([
+          {
+            company_id: companyId,
+            barcode: newProduct.barcode,
+            item_name: newProduct.item_name,
+            unit: newProduct.unit || null,
+            hsn_code: newProduct.hsn_code || null,
+            mrp: newProduct.mrp ? parseFloat(newProduct.mrp) : null,
+            cost_price: newProduct.cost_price ? parseFloat(newProduct.cost_price) : null,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setProducts((prev) => [...prev, data].sort((a, b) => a.item_name.localeCompare(b.item_name)));
+      setItemDetails((prev) => ({ ...prev, product_id: String(data.id) }));
+      setNewProduct(emptyNewProduct);
+      setShowNewProduct(false);
+      setMessage(`Product "${data.item_name}" created`);
+    } catch (error) {
+      console.error('[v0] Error adding product:', error);
+      setMessage('Error adding product');
+    } finally {
+      setSavingProduct(false);
     }
   };
 
@@ -221,22 +284,77 @@ export function ProductItemLookup() {
               </div>
 
               <div>
-                <Label htmlFor="product_id">Product (SKU)</Label>
-                <Select
-                  value={itemDetails.product_id}
-                  onValueChange={(value) => setItemDetails({ ...itemDetails, product_id: value })}
-                >
-                  <SelectTrigger id="product_id">
-                    <SelectValue placeholder="Link to a product" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {products.map((product) => (
-                      <SelectItem key={product.id} value={product.id.toString()}>
-                        {product.item_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="product_id">Product (SKU)</Label>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewProduct((v) => !v)}
+                    className="text-xs font-medium text-blue-600 hover:underline"
+                  >
+                    {showNewProduct ? 'Cancel' : '+ New product'}
+                  </button>
+                </div>
+                {!showNewProduct ? (
+                  <Select
+                    value={itemDetails.product_id}
+                    onValueChange={(value) => setItemDetails({ ...itemDetails, product_id: value })}
+                  >
+                    <SelectTrigger id="product_id">
+                      <SelectValue placeholder={products.length ? 'Link to a product' : 'No products yet - add one'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {products.map((product) => (
+                        <SelectItem key={product.id} value={product.id.toString()}>
+                          {product.item_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <form onSubmit={handleAddProduct} className="space-y-2 border rounded-lg p-3 mt-2 bg-slate-50">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <Input
+                        placeholder="Barcode *"
+                        value={newProduct.barcode}
+                        onChange={(e) => setNewProduct({ ...newProduct, barcode: e.target.value })}
+                        required
+                      />
+                      <Input
+                        placeholder="Product name *"
+                        value={newProduct.item_name}
+                        onChange={(e) => setNewProduct({ ...newProduct, item_name: e.target.value })}
+                        required
+                      />
+                      <Input
+                        placeholder="Unit (e.g. pcs)"
+                        value={newProduct.unit}
+                        onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value })}
+                      />
+                      <Input
+                        placeholder="HSN code"
+                        value={newProduct.hsn_code}
+                        onChange={(e) => setNewProduct({ ...newProduct, hsn_code: e.target.value })}
+                      />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="MRP"
+                        value={newProduct.mrp}
+                        onChange={(e) => setNewProduct({ ...newProduct, mrp: e.target.value })}
+                      />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Cost price"
+                        value={newProduct.cost_price}
+                        onChange={(e) => setNewProduct({ ...newProduct, cost_price: e.target.value })}
+                      />
+                    </div>
+                    <Button type="submit" size="sm" disabled={savingProduct} className="w-full">
+                      {savingProduct ? 'Saving...' : 'Save product'}
+                    </Button>
+                  </form>
+                )}
               </div>
 
               <div>

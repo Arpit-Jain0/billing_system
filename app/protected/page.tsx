@@ -19,6 +19,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useCompany } from '@/contexts/CompanyContext';
 import { SalesForm } from '@/components/sales/SalesForm';
 import { RetailQuickSale } from '@/components/sales/RetailQuickSale';
 import { PartySale } from '@/components/sales/PartySale';
@@ -28,6 +29,7 @@ import { PaymentEntry } from '@/components/payment/PaymentEntry';
 import { ReceiptsList } from '@/components/reports/ReceiptsList';
 import { SalesList } from '@/components/reports/SalesList';
 import { PurchaseList } from '@/components/reports/PurchaseList';
+import { OutstandingReport } from '@/components/reports/OutstandingReport';
 import { getCurrentAccountingYear } from '@/lib/invoice-utils';
 
 const NAV_ITEMS = [
@@ -44,9 +46,14 @@ const NAV_ITEMS = [
 export default function Home() {
   const router = useRouter();
   const { user, signOut } = useAuthContext();
+  const { companyId, tenantName } = useCompany();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [navOpen, setNavOpen] = useState(false);
+  const [outstandingType, setOutstandingType] = useState<'sales' | 'purchase' | null>(null);
+
+  // ProtectedLayout only renders children once companyId is resolved.
+  if (!companyId) return null;
 
   const handleSuccess = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -71,7 +78,7 @@ export default function Home() {
               </SheetTrigger>
               <SheetContent side="left" className="w-72 p-0 flex flex-col">
                 <SheetHeader className="border-b">
-                  <SheetTitle>MAA PADMAWATI SAREES</SheetTitle>
+                  <SheetTitle>{tenantName || 'Menu'}</SheetTitle>
                 </SheetHeader>
                 <nav className="flex-1 overflow-y-auto p-2 space-y-1">
                   {NAV_ITEMS.map(({ value, label, icon: Icon }) => (
@@ -105,7 +112,7 @@ export default function Home() {
               </SheetContent>
             </Sheet>
             <div className="min-w-0">
-              <h1 className="text-xl md:text-4xl font-bold text-slate-900 truncate">MAA PADMAWATI SAREES</h1>
+              <h1 className="text-xl md:text-4xl font-bold text-slate-900 truncate">{tenantName || 'Dashboard'}</h1>
               <p className="hidden sm:block text-lg text-slate-600 mt-2">Billing & Inventory Management System</p>
               <p className="sm:hidden text-sm font-medium text-slate-700 mt-1">
                 {NAV_ITEMS.find((item) => item.value === activeTab)?.label}
@@ -237,27 +244,27 @@ export default function Home() {
 
           {/* Retail Quick Sale Tab */}
           <TabsContent value="quick-sale" className="mt-6">
-            <RetailQuickSale />
+            <RetailQuickSale companyId={companyId} />
           </TabsContent>
 
           {/* Party/Bulk Sale Tab */}
           <TabsContent value="party-sale" className="mt-6">
-            <PartySale />
+            <PartySale companyId={companyId} />
           </TabsContent>
 
           {/* Product Management Tab */}
           <TabsContent value="product" className="mt-6">
-            <ProductItemLookup />
+            <ProductItemLookup companyId={companyId} />
           </TabsContent>
 
           {/* Sales Tab */}
           <TabsContent value="sales" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1">
-                <SalesForm onSuccess={handleSuccess} />
+                <SalesForm companyId={companyId} onSuccess={handleSuccess} />
               </div>
               <div className="lg:col-span-2">
-                <SalesList key={refreshTrigger} />
+                <SalesList companyId={companyId} key={refreshTrigger} />
               </div>
             </div>
           </TabsContent>
@@ -266,10 +273,10 @@ export default function Home() {
           <TabsContent value="purchase" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1">
-                <PurchaseForm onSuccess={handleSuccess} />
+                <PurchaseForm companyId={companyId} onSuccess={handleSuccess} />
               </div>
               <div className="lg:col-span-2">
-                <PurchaseList key={refreshTrigger} />
+                <PurchaseList companyId={companyId} key={refreshTrigger} />
               </div>
             </div>
           </TabsContent>
@@ -278,10 +285,10 @@ export default function Home() {
           <TabsContent value="payment" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1">
-                <PaymentEntry onSuccess={handleSuccess} />
+                <PaymentEntry companyId={companyId} onSuccess={handleSuccess} />
               </div>
               <div className="lg:col-span-2">
-                <ReceiptsList key={refreshTrigger} />
+                <ReceiptsList companyId={companyId} key={refreshTrigger} />
               </div>
             </div>
           </TabsContent>
@@ -295,11 +302,17 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <button className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition text-left">
+                  <button
+                    onClick={() => setOutstandingType('sales')}
+                    className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition text-left"
+                  >
                     <div className="font-medium text-slate-900">Sales Outstanding</div>
                     <div className="text-sm text-slate-500 mt-1">Pending customer payments</div>
                   </button>
-                  <button className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition text-left">
+                  <button
+                    onClick={() => setOutstandingType('purchase')}
+                    className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition text-left"
+                  >
                     <div className="font-medium text-slate-900">Purchase Outstanding</div>
                     <div className="text-sm text-slate-500 mt-1">Pending supplier payments</div>
                   </button>
@@ -309,6 +322,12 @@ export default function Home() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <OutstandingReport
+        companyId={companyId}
+        type={outstandingType}
+        onOpenChange={(open) => !open && setOutstandingType(null)}
+      />
     </main>
   );
 }
