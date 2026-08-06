@@ -15,6 +15,7 @@ import {
   Truck,
   Wallet,
   BarChart3,
+  Settings,
   Menu,
   LogOut,
 } from 'lucide-react';
@@ -30,9 +31,11 @@ import { ReceiptsList } from '@/components/reports/ReceiptsList';
 import { SalesList } from '@/components/reports/SalesList';
 import { PurchaseList } from '@/components/reports/PurchaseList';
 import { OutstandingReport } from '@/components/reports/OutstandingReport';
+import { SettingsPanel } from '@/components/settings/SettingsPanel';
+import { ReadOnlyNotice } from '@/components/settings/ReadOnlyNotice';
 import { getCurrentAccountingYear } from '@/lib/invoice-utils';
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { value: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { value: 'quick-sale', label: 'Retail Sale', icon: ShoppingCart },
   { value: 'party-sale', label: 'Party Sale', icon: Package },
@@ -43,10 +46,12 @@ const NAV_ITEMS = [
   { value: 'reports', label: 'Reports', icon: BarChart3 },
 ];
 
+const SETTINGS_NAV_ITEM = { value: 'settings', label: 'Settings', icon: Settings };
+
 export default function Home() {
   const router = useRouter();
   const { user, signOut } = useAuthContext();
-  const { companyId, tenantName } = useCompany();
+  const { companyId, tenantName, companyName, accountingYear, role, refreshCompany } = useCompany();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [navOpen, setNavOpen] = useState(false);
@@ -54,6 +59,10 @@ export default function Home() {
 
   // ProtectedLayout only renders children once companyId is resolved.
   if (!companyId) return null;
+
+  const canManageShop = role === 'owner' || role === 'admin';
+  const navItems = canManageShop ? [...BASE_NAV_ITEMS, SETTINGS_NAV_ITEM] : BASE_NAV_ITEMS;
+  const displayName = companyName || tenantName;
 
   const handleSuccess = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -78,10 +87,10 @@ export default function Home() {
               </SheetTrigger>
               <SheetContent side="left" className="w-72 p-0 flex flex-col">
                 <SheetHeader className="border-b">
-                  <SheetTitle>{tenantName || 'Menu'}</SheetTitle>
+                  <SheetTitle>{displayName || 'Menu'}</SheetTitle>
                 </SheetHeader>
                 <nav className="flex-1 overflow-y-auto p-2 space-y-1">
-                  {NAV_ITEMS.map(({ value, label, icon: Icon }) => (
+                  {navItems.map(({ value, label, icon: Icon }) => (
                     <button
                       key={value}
                       onClick={() => {
@@ -112,12 +121,12 @@ export default function Home() {
               </SheetContent>
             </Sheet>
             <div className="min-w-0">
-              <h1 className="text-xl md:text-4xl font-bold text-slate-900 truncate">{tenantName || 'Dashboard'}</h1>
+              <h1 className="text-xl md:text-4xl font-bold text-slate-900 truncate">{displayName || 'Dashboard'}</h1>
               <p className="hidden sm:block text-lg text-slate-600 mt-2">Billing & Inventory Management System</p>
               <p className="sm:hidden text-sm font-medium text-slate-700 mt-1">
-                {NAV_ITEMS.find((item) => item.value === activeTab)?.label}
+                {navItems.find((item) => item.value === activeTab)?.label}
               </p>
-              <p className="text-xs md:text-sm text-slate-500 mt-1">Accounting Year: {getCurrentAccountingYear()}</p>
+              <p className="text-xs md:text-sm text-slate-500 mt-1">Accounting Year: {accountingYear || getCurrentAccountingYear()}</p>
             </div>
           </div>
           <div className="hidden md:flex flex-col items-end gap-2 shrink-0">
@@ -136,8 +145,8 @@ export default function Home() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="hidden md:grid w-full grid-cols-8">
-            {NAV_ITEMS.map(({ value, label }) => (
+          <TabsList className={`hidden md:grid w-full ${canManageShop ? 'grid-cols-9' : 'grid-cols-8'}`}>
+            {navItems.map(({ value, label }) => (
               <TabsTrigger key={value} value={value}>
                 {label}
               </TabsTrigger>
@@ -244,12 +253,12 @@ export default function Home() {
 
           {/* Retail Quick Sale Tab */}
           <TabsContent value="quick-sale" className="mt-6">
-            <RetailQuickSale companyId={companyId} />
+            {role === 'viewer' ? <ReadOnlyNotice what="record sales" /> : <RetailQuickSale companyId={companyId} />}
           </TabsContent>
 
           {/* Party/Bulk Sale Tab */}
           <TabsContent value="party-sale" className="mt-6">
-            <PartySale companyId={companyId} />
+            {role === 'viewer' ? <ReadOnlyNotice what="record sales" /> : <PartySale companyId={companyId} />}
           </TabsContent>
 
           {/* Product Management Tab */}
@@ -260,10 +269,12 @@ export default function Home() {
           {/* Sales Tab */}
           <TabsContent value="sales" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-1">
-                <SalesForm companyId={companyId} onSuccess={handleSuccess} />
-              </div>
-              <div className="lg:col-span-2">
+              {role !== 'viewer' && (
+                <div className="lg:col-span-1">
+                  <SalesForm companyId={companyId} onSuccess={handleSuccess} />
+                </div>
+              )}
+              <div className={role === 'viewer' ? 'lg:col-span-3' : 'lg:col-span-2'}>
                 <SalesList companyId={companyId} key={refreshTrigger} />
               </div>
             </div>
@@ -272,10 +283,12 @@ export default function Home() {
           {/* Purchase Tab */}
           <TabsContent value="purchase" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-1">
-                <PurchaseForm companyId={companyId} onSuccess={handleSuccess} />
-              </div>
-              <div className="lg:col-span-2">
+              {role !== 'viewer' && (
+                <div className="lg:col-span-1">
+                  <PurchaseForm companyId={companyId} onSuccess={handleSuccess} />
+                </div>
+              )}
+              <div className={role === 'viewer' ? 'lg:col-span-3' : 'lg:col-span-2'}>
                 <PurchaseList companyId={companyId} key={refreshTrigger} />
               </div>
             </div>
@@ -284,10 +297,12 @@ export default function Home() {
           {/* Payment Tab */}
           <TabsContent value="payment" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-1">
-                <PaymentEntry companyId={companyId} onSuccess={handleSuccess} />
-              </div>
-              <div className="lg:col-span-2">
+              {role !== 'viewer' && (
+                <div className="lg:col-span-1">
+                  <PaymentEntry companyId={companyId} onSuccess={handleSuccess} />
+                </div>
+              )}
+              <div className={role === 'viewer' ? 'lg:col-span-3' : 'lg:col-span-2'}>
                 <ReceiptsList companyId={companyId} key={refreshTrigger} />
               </div>
             </div>
@@ -320,6 +335,13 @@ export default function Home() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Settings Tab (owner/admin only) */}
+          {canManageShop && (
+            <TabsContent value="settings" className="mt-6">
+              <SettingsPanel companyId={companyId} onShopUpdated={refreshCompany} />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
 

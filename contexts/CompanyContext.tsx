@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthContext } from '@/contexts/AuthContext';
 
@@ -9,6 +9,7 @@ type Role = 'owner' | 'admin' | 'staff' | 'viewer';
 interface Membership {
   companyId: number;
   companyName: string;
+  accountingYear: string | null;
   role: Role;
 }
 
@@ -26,10 +27,15 @@ interface CompanyContextType {
   // resolved shop - this is what the rest of the app should scope
   // every query to.
   companyId: number | null;
+  companyName: string | null;
+  accountingYear: string | null;
   role: Role | null;
   // True once loading is done and the user does NOT belong to the
   // shop resolved from the subdomain.
   accessDenied: boolean;
+  // Re-reads the shop's own profile (name/accounting year) after an edit
+  // in Settings, without a full page reload.
+  refreshCompany: () => void;
 }
 
 function readCookie(name: string): string | null {
@@ -54,6 +60,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const [membershipLoading, setMembershipLoading] = useState(true);
   const [membership, setMembership] = useState<Membership | null>(null);
   const [accessDenied, setAccessDenied] = useState(false);
+  const [refreshNonce, setRefreshNonce] = useState(0);
 
   useEffect(() => {
     setTenant({
@@ -78,7 +85,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     supabase
       .schema('saree')
       .from('user_companies')
-      .select('company_id, role, companies(name)')
+      .select('company_id, role, companies(name, accounting_year)')
       .eq('user_id', user.id)
       .eq('company_id', parseInt(tenant.id))
       .maybeSingle()
@@ -88,6 +95,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
           setMembership({
             companyId: data.company_id,
             companyName: (data as any).companies?.name ?? tenant.name ?? '',
+            accountingYear: (data as any).companies?.accounting_year ?? null,
             role: data.role as Role,
           });
           setAccessDenied(false);
@@ -101,7 +109,9 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [user, authLoading, tenantResolved, tenant.id, tenant.name]);
+  }, [user, authLoading, tenantResolved, tenant.id, tenant.name, refreshNonce]);
+
+  const refreshCompany = useCallback(() => setRefreshNonce((n) => n + 1), []);
 
   return (
     <CompanyContext.Provider
@@ -111,8 +121,11 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         tenantSlug: tenant.slug,
         tenantName: tenant.name,
         companyId: membership?.companyId ?? null,
+        companyName: membership?.companyName ?? null,
+        accountingYear: membership?.accountingYear ?? null,
         role: membership?.role ?? null,
         accessDenied,
+        refreshCompany,
       }}
     >
       {children}

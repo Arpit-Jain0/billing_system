@@ -2,6 +2,7 @@
 
 Everything the code needs from Supabase, Vercel, and your domain to actually go live. Follow in order — each section depends on the one before it.
 
+
 ## 1. Supabase
 
 ### 1a. Run the schema migration (if not already done)
@@ -15,6 +16,10 @@ Open **Supabase Dashboard → SQL Editor**, paste in `MULTI_TENANT_MIGRATION.sql
 Safe to re-run — every step is idempotent.
 
 > If your login page already shows a shop name instead of "Shop not found," this step is done.
+
+### 1a-2. Run the team/roles migration
+
+Same place, paste in `TEAM_AND_ROLES_MIGRATION.sql`, run it. It makes the `role` on each team member actually mean something — until this runs, every role (including "Viewer") can write data; after, only `owner`/`admin`/`staff` can, `viewer` is truly read-only. Also lets `owner`/`admin` edit their shop's name/accounting year from Settings.
 
 ### 1b. Create your first login (Supabase Auth)
 
@@ -31,17 +36,18 @@ The app now uses Supabase's own auth instead of the old custom table, so a real 
 
 Without step 3, login succeeds but the app shows "No access to this shop."
 
+This is also the *only* time you need SQL for team members — once one owner account exists, they can invite everyone else from **Settings → Team Members** in the app itself (see section 4).
+
 ### 1c. Adding each new shop later
 
-No deploy, no DNS work — just:
+Still needs one SQL insert (there's no self-serve "create a shop" UI yet — see the note at the end of this doc):
 ```sql
 insert into saree.companies (name, slug, accounting_year)
 values ('Shop B', 'shopb', '2026-2027');
-
-insert into saree.user_companies (user_id, company_id, role)
-values ('<user-uuid>', <new-company-id>, 'owner');
 ```
-`slug` is what has to match the subdomain (`shopb` -> `shopb.yourdomain.com`).
+`slug` is what has to match the subdomain (`shopb` -> `shopb.yourdomain.com`). No DNS or Vercel work needed — the wildcard from section 2b already covers it.
+
+That new shop still needs its *first* owner linked by hand (same as 1b step 3, with the new `company_id`) — a shop with zero members has no one who could send an invite. Every member after that first owner can be added straight from Settings.
 
 ## 2. Vercel
 
@@ -53,8 +59,9 @@ values ('<user-uuid>', <new-company-id>, 'owner');
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | from `.env.local` / Supabase → Settings → API |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | same place |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API → **service_role** key (secret) |
 
-(Already required before this change — confirm they're still set if the build ever complains about a missing Supabase URL again.)
+The first two were already required. `SUPABASE_SERVICE_ROLE_KEY` is new — it powers team invites in Settings and is only ever read server-side (`app/api/settings/*`). **Never** prefix it with `NEXT_PUBLIC_` or reference it from a `'use client'` file — that would ship it to every visitor's browser.
 
 ### 2b. Wildcard domain
 
@@ -86,3 +93,8 @@ Propagation is usually fast; Vercel auto-issues SSL once it resolves. Once `shop
 - **Barcodes, bill numbers, and item IDs are now unique per shop**, not globally — two shops can both have a product barcoded `1234`.
 - **The two API routes** (`/api/sales`, `/api/invoice-items`) were removed — nothing in the app called them, and they predated the auth/RLS model, so keeping them would have meant either leaving a bypass around RLS or maintaining a second, parallel auth path for no user.
 - **Two previously-static "Reports" buttons** (Sales Outstanding / Purchase Outstanding) now open a real report instead of doing nothing.
+- **New: Settings tab** (owner/admin only, in the nav). Two things live there:
+  - **Shop Profile** — edit the shop's name and accounting year.
+  - **Team Members** — invite people by email with a role (`Owner`/`Admin`/`Staff`/`Viewer`), change anyone's role, or remove them. Inviting sends them a real Supabase Auth invite email; if that email already has an account elsewhere, it just grants them access to this shop instead of erroring.
+- **Roles are now enforced, not cosmetic.** After running `TEAM_AND_ROLES_MIGRATION.sql`, `viewer` can see everything but can't create or edit anything — enforced by RLS (so it holds even if the UI has a bug), and the UI itself replaces write-only screens (Retail Sale, Party Sale, and the entry forms on Sales/Purchase/Payment) with a "view-only" notice for that role instead of showing a form that would just fail.
+- **Not built yet:** self-serve "create a new shop" signup. Every new shop's *first* owner still needs one manual SQL insert (1c) — after that, everyone else on that shop can be invited from the UI. Worth building if you expect shops to sign themselves up rather than you provisioning them.
